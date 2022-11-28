@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:planetka/main/pages/planet_page.dart';
 import 'package:planetka/microsoft_ui/forms/text_input.dart';
 import 'package:planetka/microsoft_ui/texts/text_headline.dart';
 import 'package:planetka/registration/pages/register.dart';
@@ -35,7 +36,10 @@ class LoginPage extends StatelessWidget {
                       child: FloatingActionButton.extended(
                         label: const Text('Вход'),
                         onPressed: () {
-                          // Navigate to second route when tapped.
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const PlanetPage()),
+                          );
                         },
                       ),
                     ),
