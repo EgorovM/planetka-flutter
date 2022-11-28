@@ -30,8 +30,8 @@ class SampleButton extends StatelessWidget {
           children: [
             Image.asset(
               imgPath,
-              width: 25,
-              height: 25,
+              width: 18,
+              height: 18,
             ),
             SizedBox(
               height: 15,

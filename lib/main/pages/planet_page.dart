@@ -6,13 +6,6 @@ import 'package:planetka/main/components/sample_button.dart';
 class PlanetPage extends StatefulWidget {
   const PlanetPage({Key? key}) : super(key: key);
 
-  static final List<Widget> _widgetOptions = <Widget>[
-    const PlanetPage(),
-    const PlanetPage(),
-    const PlanetPage(),
-    const PlanetPage(),
-  ];
-
   @override
   State<PlanetPage> createState() => _PlanetPageState();
 }
