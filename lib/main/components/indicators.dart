@@ -62,6 +62,7 @@ class IndicatorsComponent extends StatelessWidget {
                       text,
                       style: const TextStyle(
                         fontFamily: 'Montserrat',
+                        color: Color(0xff646363),
                       ),
                     ),
                   ],
