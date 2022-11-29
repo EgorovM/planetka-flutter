@@ -3,16 +3,18 @@ import 'package:planetka/microsoft_ui/texts/text_body1.dart';
 
 
 class MicrosoftTextInput extends StatefulWidget {
-  const MicrosoftTextInput({
+  MicrosoftTextInput({
     Key? key,
     required this.title,
     this.placeholder = 'Ввод...',
     this.errorText = 'Введите корректное сообщение',
+    this.controller,
   }) : super(key: key);
 
   final String title;
   final String placeholder;
   final String errorText;
+  TextEditingController? controller;
 
   @override
   State<StatefulWidget> createState() => _TextInputState();
@@ -35,6 +37,7 @@ class _TextInputState extends State<MicrosoftTextInput> {
               hintText: widget.placeholder,
               fillColor: const Color(0xffEFF6FC),
             ),
+            controller: widget.controller,
           ),
         ),
       ],

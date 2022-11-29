@@ -1,11 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:planetka/authentification/api/auth_api.dart';
 import 'package:planetka/authentification/pages/authentification.dart';
 import 'package:planetka/microsoft_ui/forms/text_input.dart';
 import 'package:planetka/microsoft_ui/texts/text_headline.dart';
 
+import '../../main/pages/planet_page.dart';
+
 
 class RegisterPage extends StatelessWidget {
-  const RegisterPage({Key? key}) : super(key: key);
+  RegisterPage({Key? key}) : super(key: key);
+
+  final loginController = TextEditingController();
+  final nameController = TextEditingController();
+  final passwordController = TextEditingController();
+  final secondPasswordController = TextEditingController();
+  final emailController = TextEditingController();
+  final authApi = AuthAPI();
 
   @override
   Widget build(BuildContext context) {
@@ -21,13 +32,15 @@ class RegisterPage extends StatelessWidget {
 
             const MicrosoftHeadlineText("Регистрация"),
             const SizedBox(height: 32),
-            const MicrosoftTextInput(title: "Логин", placeholder: "Введите логин..."),
+            MicrosoftTextInput(title: "Почта", placeholder: "Введите почту...", controller: emailController,),
             const SizedBox(height: 24),
-            const MicrosoftTextInput(title: "Имя", placeholder: "Введите имя..."),
+            MicrosoftTextInput(title: "Логин", placeholder: "Введите логин...", controller: loginController,),
             const SizedBox(height: 24),
-            const MicrosoftTextInput(title: "Пароль", placeholder: "Введите пароль..."),
+            MicrosoftTextInput(title: "Имя", placeholder: "Введите имя...", controller: nameController,),
             const SizedBox(height: 24),
-            const MicrosoftTextInput(title: "Повторите пароль", placeholder: "Введите пароль..."),
+            MicrosoftTextInput(title: "Пароль", placeholder: "Введите пароль...", controller: passwordController,),
+            const SizedBox(height: 24),
+            MicrosoftTextInput(title: "Повторите пароль", placeholder: "Введите пароль...", controller: secondPasswordController,),
             const SizedBox(height: 52,),
 
             Center(
@@ -38,7 +51,34 @@ class RegisterPage extends StatelessWidget {
                     height: 36,
                     child: FloatingActionButton.extended(
                       label: const Text('Зарегистрироваться'),
-                      onPressed: () {
+                      onPressed: () async {
+                        if(secondPasswordController.text != passwordController.text) {
+                          Fluttertoast.showToast(
+                            msg: "Пароли должны совпадать",
+                            toastLength: Toast.LENGTH_SHORT,
+                          );
+                        }
+
+                        String errorText = await authApi.register(
+                            emailController.text,
+                            loginController.text,
+                            nameController.text,
+                            passwordController.text,
+                            secondPasswordController.text
+                        );
+
+                        if(errorText.isNotEmpty) {
+                          Fluttertoast.showToast(
+                            msg: errorText,
+                            toastLength: Toast.LENGTH_SHORT,
+                          );
+                          return;
+                        }
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const PlanetPage()),
+                        );
                       },
                     ),
                   ),
@@ -54,7 +94,7 @@ class RegisterPage extends StatelessWidget {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const LoginPage()),
+                          MaterialPageRoute(builder: (context) => LoginPage()),
                         );
                       },
                     ),

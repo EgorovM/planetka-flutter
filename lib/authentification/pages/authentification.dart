@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:planetka/authentification/api/auth_api.dart';
 import 'package:planetka/main/pages/planet_page.dart';
 import 'package:planetka/microsoft_ui/forms/text_input.dart';
 import 'package:planetka/microsoft_ui/texts/text_headline.dart';
@@ -6,7 +8,11 @@ import 'package:planetka/registration/pages/register.dart';
 
 
 class LoginPage extends StatelessWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  LoginPage({Key? key}) : super(key: key);
+  final authApi = AuthAPI();
+
+  final loginController = TextEditingController();
+  final passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +28,17 @@ class LoginPage extends StatelessWidget {
 
               const MicrosoftHeadlineText("Вход"),
               const SizedBox(height: 32),
-              const MicrosoftTextInput(title: "Логин", placeholder: "Введите логин..."),
+              MicrosoftTextInput(
+                  title: "Логин",
+                  placeholder: "Введите логин...",
+                  controller: loginController,
+              ),
               const SizedBox(height: 24),
-              const MicrosoftTextInput(title: "Пароль", placeholder: "Введите пароль..."),
+              MicrosoftTextInput(
+                  title: "Пароль",
+                  placeholder: "Введите пароль...",
+                  controller: passwordController,
+              ),
               const SizedBox(height: 24),
 
               Center(
@@ -35,7 +49,17 @@ class LoginPage extends StatelessWidget {
                       height: 36,
                       child: FloatingActionButton.extended(
                         label: const Text('Вход'),
-                        onPressed: () {
+                        onPressed: () async {
+                          String errorText = await authApi.auth(loginController.text, passwordController.text);
+
+                          if(errorText.isNotEmpty) {
+                            Fluttertoast.showToast(
+                                msg: errorText,
+                                toastLength: Toast.LENGTH_SHORT,
+                            );
+                            return;
+                          }
+
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => const PlanetPage()),
@@ -55,7 +79,7 @@ class LoginPage extends StatelessWidget {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const RegisterPage()),
+                            MaterialPageRoute(builder: (context) => RegisterPage()),
                           );
                         },
                       ),
