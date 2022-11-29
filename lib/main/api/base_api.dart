@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -23,24 +25,49 @@ class BaseAPI {
     return errorText;
   }
 
-  Future<void> initHeaders() async {
+  Future<void> initHeaders({int deep = 0}) async {
+    if(deep > 2) {
+      return;
+    }
+
     final prefs = await SharedPreferences.getInstance();
     final authToken = prefs.getString('auth_token') ?? '';
+    final refreshTokenValue = prefs.getString('refresh_token') ?? '';
 
     if(authToken.isNotEmpty) {
-      headers["Authentication"] = "JWT " + authToken;
+      if(!await isTokenValid(authToken)) {
+        refreshToken(refreshTokenValue);
+        initHeaders(deep: deep + 1);
+      }
+
+      headers["Authorization"] = "Bearer " + authToken;
     }
   }
 
-  Future<http.Response> get(String uri) async {
-    var url = Uri.parse(BaseAPI.HOST + uri);
-    var response = await client.post(url, headers: headers);
+  Future<bool> isTokenValid(String accessToken) async {
+    final response = await post('auth/token/verify/', {"token": accessToken});
+    return response.statusCode < 300;
+  }
+
+  Future<void> refreshToken(refreshToken) async {
+    final response = await post('auth/token/refresh/', {"refresh": refreshToken});
+    final result = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+
+    if(response.statusCode < 300) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString("auth_token", result["access"]);
+  }
+
+  Future<http.Response> get(String uri, {bool useHeaders = true}) async {
+    final url = Uri.parse(BaseAPI.HOST + uri);
+    final response = await client.get(url, headers: useHeaders ? headers : {});
     return response;
   }
 
-  Future<http.Response> post(String uri, Map<String, String> body) async {
+  Future<http.Response> post(String uri, Map<String, String> body, {bool useHeaders = true}) async {
     final url = Uri.parse(BaseAPI.HOST + uri);
-    final response = await client.post(url, body: body, headers: headers);
+    final response = await client.post(url, body: body, headers: useHeaders ? headers : {});
     return response;
   }
 }

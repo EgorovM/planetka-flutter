@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:planetka/main/components/indicators.dart';
 import 'package:planetka/main/components/navigation_bar.dart';
 import 'package:planetka/main/components/sample_button.dart';
+
+import '../api/resource_api.dart';
 
 class PlanetPage extends StatefulWidget {
   const PlanetPage({Key? key}) : super(key: key);
@@ -11,7 +15,28 @@ class PlanetPage extends StatefulWidget {
 }
 
 class _PlanetPageState extends State<PlanetPage> {
+  final resourceApi = ResourceAPI();
+
   bool isShowed = false;
+  int gasPercent = 0;
+  int waterPercent = 0;
+  int areaPercent = 0;
+
+  _PlanetPageState() {
+    setResources();
+  }
+
+  Future<void> setResources() async {
+    final resources = await resourceApi.getResources();
+
+    print(resources);
+
+    gasPercent = resources["total_ghg"].round();
+    waterPercent = resources["total_water"].round();
+    areaPercent = resources["total_land"].round();
+
+    setState(() {});
+  }
 
   static final List<Widget> _foodOptions = <Widget>[
     Padding(
@@ -126,30 +151,30 @@ class _PlanetPageState extends State<PlanetPage> {
               Column(
                 children: [
                   Row(
-                    children: const [
+                    children: [
                       IndicatorsComponent(
-                        percent: 20,
+                        percent: gasPercent,
                         imageUrl: 'assets/icons/icon-achievements.png',
                         text: 'gas',
-                        fillColor: Color(0xff106EBE),
-                        backgroundColor: Color(0xffEFF6FC),
-                        borderColor: Color(0xffC7E0F4),
+                        fillColor: const Color(0xff106EBE),
+                        backgroundColor: const Color(0xffEFF6FC),
+                        borderColor: const Color(0xffC7E0F4),
                       ),
                       IndicatorsComponent(
-                        percent: 45,
+                        percent: waterPercent,
                         imageUrl: 'assets/icons/icon-water.png',
                         text: 'water',
-                        fillColor: Color(0xffAEA33C),
-                        backgroundColor: Color(0xffF9FCEF),
-                        borderColor: Color(0xffAEA33C),
+                        fillColor: const Color(0xffAEA33C),
+                        backgroundColor: const Color(0xffF9FCEF),
+                        borderColor: const Color(0xffAEA33C),
                       ),
                       IndicatorsComponent(
-                        percent: 10,
+                        percent: areaPercent,
                         imageUrl: 'assets/icons/icon-area.png',
                         text: 'area',
-                        fillColor: Color(0xff106EBE),
-                        backgroundColor: Color(0xffEFF6FC),
-                        borderColor: Color(0xffC7E0F4),
+                        fillColor: const Color(0xff106EBE),
+                        backgroundColor: const Color(0xffEFF6FC),
+                        borderColor: const Color(0xffC7E0F4),
                       ),
                     ],
                   ),
