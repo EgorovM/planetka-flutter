@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:planetka/main/components/indicators.dart';
@@ -6,6 +8,7 @@ import 'package:planetka/main/components/navigation_bar.dart';
 import 'package:planetka/main/components/sample_button.dart';
 
 import '../api/resource_api.dart';
+import '../components/food.dart';
 
 class PlanetPage extends StatefulWidget {
   const PlanetPage({Key? key}) : super(key: key);
@@ -17,85 +20,63 @@ class PlanetPage extends StatefulWidget {
 class _PlanetPageState extends State<PlanetPage> {
   final resourceApi = ResourceAPI();
 
+  String planetImage = "assets/images/emotion-happy.png";
+
   bool isShowed = false;
+  bool isWaterShowed = false;
   int gasPercent = 0;
   int waterPercent = 0;
   int areaPercent = 0;
 
-  _PlanetPageState() {
+  @override
+  void initState() {
     setResources();
+    setFoods();
+    super.initState();
   }
 
   Future<void> setResources() async {
     final resources = await resourceApi.getResources();
-
     print(resources);
-
-    gasPercent = resources["total_ghg"].round();
-    waterPercent = resources["total_water"].round();
-    areaPercent = resources["total_land"].round();
-
+    gasPercent = min(max((resources["total_ghg"]).round(), 0), 100);
+    waterPercent = min(max((resources["total_water"]).round(), 0), 100);
+    areaPercent = min(max((resources["total_land"]).round(), 0), 100);
     setState(() {});
   }
 
-  static final List<Widget> _foodOptions = <Widget>[
-    Padding(
-      padding: const EdgeInsets.all(5.0),
-      child: Image.asset(
-        'assets/icons/icon-samplefood.png',
-        width: 56,
-        height: 56,
-      ),
-    ),
-    Padding(
-      padding: const EdgeInsets.all(5.0),
-      child: Image.asset(
-        'assets/icons/icon-samplefood.png',
-        width: 56,
-        height: 56,
-      ),
-    ),
-    Padding(
-      padding: const EdgeInsets.all(5.0),
-      child: Image.asset(
-        'assets/icons/icon-samplefood.png',
-        width: 56,
-        height: 56,
-      ),
-    ),
-    Padding(
-      padding: const EdgeInsets.all(5.0),
-      child: Image.asset(
-        'assets/icons/icon-samplefood.png',
-        width: 56,
-        height: 56,
-      ),
-    ),
-    Padding(
-      padding: const EdgeInsets.all(5.0),
-      child: Image.asset(
-        'assets/icons/icon-samplefood.png',
-        width: 56,
-        height: 56,
-      ),
-    ),
-    Padding(
-      padding: const EdgeInsets.all(5.0),
-      child: Image.asset(
-        'assets/icons/icon-samplefood.png',
-        width: 56,
-        height: 56,
-      ),
-    ),
-    Padding(
-      padding: const EdgeInsets.all(5.0),
-      child: Image.asset(
-        'assets/icons/icon-samplefood.png',
-        width: 56,
-        height: 56,
-      ),
-    ),
-  ];
+  Future<void> foodCallback(Map foodJson) async {
+    await setResources();
+
+    if(!foodJson["is_green"]) {
+      setState(() {
+        planetImage = "assets/images/emotion-sad.png";
+      });
+
+      Timer(
+          const Duration(seconds: 2),
+          () => setState(() {
+            planetImage = "assets/images/emotion-happy.png";
+          })
+      );
+      }
+  }
+
+  Future<void> setFoods() async {
+    _foodOptions.clear();
+    _waterOptions.clear();
+
+    final foods = await resourceApi.getFoods();
+
+    for(final foodJson in foods) {
+      (foodJson["type"] == "drink" ? _waterOptions : _foodOptions).add(
+          FoodComponent(foodJson, foodCallback)
+      );
+    }
+    setState(() {});
+  }
+
+  static final List<Widget> _foodOptions = <Widget>[];
+  static final List<Widget> _waterOptions = <Widget>[];
 
   @override
   Widget build(BuildContext context) {
@@ -141,7 +122,7 @@ class _PlanetPageState extends State<PlanetPage> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Image.asset(
-                    'assets/images/emotion-happy.png',
+                    planetImage,
                     width: 300,
                     height: 500,
                     alignment: Alignment.bottomRight,
@@ -192,11 +173,8 @@ class _PlanetPageState extends State<PlanetPage> {
                                 TextButton(
                                   onPressed: () {
                                     setState(() {
-                                      if (isShowed) {
-                                        isShowed = false;
-                                      } else {
-                                        isShowed = true;
-                                      }
+                                      isShowed = !isShowed;
+                                      isWaterShowed = false;
                                     });
                                   },
                                   child: const IndicatorsComponent(
@@ -226,19 +204,41 @@ class _PlanetPageState extends State<PlanetPage> {
                                 ),
                               ],
                             ),
-                            Container(
-                              alignment: Alignment.bottomLeft,
-                              child: TextButton(
-                                onPressed: () {},
-                                child: const IndicatorsComponent(
-                                  percent: 0,
-                                  imageUrl: 'assets/icons/icon-cup.png',
-                                  text: 'water',
-                                  fillColor: Color(0xffFFFFFF),
-                                  backgroundColor: Color(0xffFFFFFF),
-                                  borderColor: Color(0xffE8ECEF),
+                            Row(
+                              children: [
+                                TextButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      isWaterShowed = !isWaterShowed;
+                                      isShowed = false;
+                                    });
+                                  },
+                                  child: const IndicatorsComponent(
+                                    percent: 0,
+                                    imageUrl: 'assets/icons/icon-cup.png',
+                                    text: 'water',
+                                    fillColor: Color(0xffFFFFFF),
+                                    backgroundColor: Color(0xffFFFFFF),
+                                    borderColor: Color(0xffE8ECEF),
+                                  ),
                                 ),
-                              ),
+                                isWaterShowed
+                                    ? SizedBox(
+                                  width: 300,
+                                  height: 70,
+                                  child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: _waterOptions.length,
+                                      itemBuilder: (BuildContext context,
+                                          int index) {
+                                        return _waterOptions[index];
+                                      }),
+                                )
+                                    : const Opacity(
+                                  opacity: 0.0,
+                                  child: Text("wow"),
+                                ),
+                              ],
                             ),
                           ],
                         ),

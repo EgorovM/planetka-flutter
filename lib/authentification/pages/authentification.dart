@@ -9,14 +9,13 @@ import 'package:planetka/registration/pages/register.dart';
 
 class LoginPage extends StatelessWidget {
   LoginPage({Key? key}) : super(key: key);
-  final authApi = AuthAPI();
 
+  final authApi = AuthAPI();
   final loginController = TextEditingController();
   final passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Scaffold(
         resizeToAvoidBottomInset: false,
         body: Padding(

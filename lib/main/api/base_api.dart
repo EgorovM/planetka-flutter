@@ -35,8 +35,8 @@ class BaseAPI {
     final refreshTokenValue = prefs.getString('refresh_token') ?? '';
 
     if(authToken.isNotEmpty) {
-      if(!await isTokenValid(authToken)) {
-        refreshToken(refreshTokenValue);
+      if(!await isTokenValid()) {
+        refreshToken();
         initHeaders(deep: deep + 1);
       }
 
@@ -44,18 +44,23 @@ class BaseAPI {
     }
   }
 
-  Future<bool> isTokenValid(String accessToken) async {
+  Future<bool> isTokenValid() async {
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('auth_token') ?? '';
+
     final response = await post('auth/token/verify/', {"token": accessToken});
     return response.statusCode < 300;
   }
 
-  Future<void> refreshToken(refreshToken) async {
-    final response = await post('auth/token/refresh/', {"refresh": refreshToken});
+  Future<void> refreshToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    final refreshTokenValue = prefs.getString('refresh_token') ?? '';
+
+    final response = await post('auth/token/refresh/', {"refresh": refreshTokenValue});
     final result = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
 
-    if(response.statusCode < 300) return;
+    if(response.statusCode > 300) return;
 
-    final prefs = await SharedPreferences.getInstance();
     prefs.setString("auth_token", result["access"]);
   }
 
@@ -65,7 +70,7 @@ class BaseAPI {
     return response;
   }
 
-  Future<http.Response> post(String uri, Map<String, String> body, {bool useHeaders = true}) async {
+  Future<http.Response> post(String uri, Map<String, dynamic> body, {bool useHeaders = true}) async {
     final url = Uri.parse(BaseAPI.HOST + uri);
     final response = await client.post(url, body: body, headers: useHeaders ? headers : {});
     return response;
